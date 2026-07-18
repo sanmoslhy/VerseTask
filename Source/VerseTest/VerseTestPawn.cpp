@@ -17,6 +17,10 @@
 
 AVerseTestPawn::AVerseTestPawn()
 {
+	PrimaryActorTick.bCanEverTick = true;
+
+	bReplicates = true;
+	SetReplicateMovement(true);
 	// construct the front camera boom
 	FrontSpringArm = CreateDefaultSubobject<USpringArmComponent>(TEXT("Front Spring Arm"));
 	FrontSpringArm->SetupAttachment(GetMesh());
@@ -98,6 +102,11 @@ void AVerseTestPawn::BeginPlay()
 
 	// set up the flipped check timer
 	GetWorld()->GetTimerManager().SetTimer(FlipCheckTimer, this, &AVerseTestPawn::FlippedCheck, FlipCheckTime, true);
+	UE_LOG(LogTemp, Warning,
+		TEXT("%s | Role=%d | HasAuthority=%d"),
+		*GetName(),
+		(int32)GetLocalRole(),
+		HasAuthority());
 }
 
 void AVerseTestPawn::EndPlay(EEndPlayReason::Type EndPlayReason)

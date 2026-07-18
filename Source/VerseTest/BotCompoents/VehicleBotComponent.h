@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "BotEnums.h"
 #include "VehicleBotComponent.generated.h"
 
 class AVerseTestPawn;
@@ -27,7 +28,7 @@ public:
 	void UpdateWaypoint();
 	void UpdateSteering(float DeltaTime);
 	void UpdateThrottle(float DeltaTime);
-
+	void PrintDiagnostics();
 	//Recovery Functions
 	void UpdateRecovery(float DeltaTime);
 
@@ -95,7 +96,19 @@ public:
 	UPROPERTY(EditAnywhere, Category = "AI|Recovery")
 	float RecoveryDuration = 1.5f;
 	UPROPERTY(EditAnywhere, Category = "AI|Recovery")
-	float RecoveryImpulse = 80000.f;
+	float RecoveryImpulse = 200.0f;
+	UPROPERTY(VisibleAnywhere, Category = "Diagnostics")
+	EBotState CurrentState = EBotState::Idle;
+
+	UPROPERTY(VisibleAnywhere, Category = "Diagnostics")
+	EBotNoProgressReason NoProgressReason = EBotNoProgressReason::None;
+
+	UPROPERTY(EditAnywhere, Category = "Diagnostics")
+	bool bEnableDiagnostics = false;
+
+	UPROPERTY(EditAnywhere, Category = "Diagnostics")
+	float DiagnosticInterval = 1.0f;
+	float DiagnosticTimer = 0.f;
 	FVector CurrentTargetPoint;
 	float CurrentThrottleInput;
 	FVector NextPoint;

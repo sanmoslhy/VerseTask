@@ -10,6 +10,12 @@
 #include"VerseTest\BotWaypoint.h"
 #include "Kismet/GameplayStatics.h"
 #include "Algo/Sort.h"
+#include "HAL/IConsoleManager.h"
+static TAutoConsoleVariable<int32> CVarBotDiag(
+	TEXT("yourbot.Diag"),
+	0,
+	TEXT("Enable Bot Diagnostics")
+);
 UVehicleBotComponent::UVehicleBotComponent()
 {
 	
@@ -23,6 +29,11 @@ UVehicleBotComponent::UVehicleBotComponent()
 void UVehicleBotComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	if (!GetOwner()->HasAuthority())
+	{
+		SetComponentTickEnabled(false);
+		return;
+	}
 
 	OwnerVehicle = Cast<AVerseTestPawn>(GetOwner());
 
@@ -88,7 +99,11 @@ void UVehicleBotComponent::BeginPlay()
 void UVehicleBotComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
+	if (!GetOwner()->HasAuthority())
+	{
+		return;
+	}
+	
 	if (!OwnerVehicle)
 	{
 		return;
@@ -102,7 +117,13 @@ void UVehicleBotComponent::TickComponent(float DeltaTime, ELevelTick TickType, F
 	UpdateWaypoint();
 	UpdateSteering(DeltaTime);
 	UpdateThrottle(DeltaTime);
+	DiagnosticTimer += DeltaTime;
 	
+	if (CVarBotDiag.GetValueOnGameThread() != 0 && DiagnosticTimer >= DiagnosticInterval)
+	{
+		DiagnosticTimer = 0.f;
+		PrintDiagnostics();
+	}
 	DrawDebugSphere(
 		GetWorld(),
 		TargetLocation,
@@ -130,6 +151,8 @@ void UVehicleBotComponent::BulidPath()
 	if (!CurrentPath || !CurrentPath->IsValid())
 	{
 		UE_LOG(LogTemp, Warning, TEXT("Invalid Path"));
+		CurrentState = EBotState::Idle;
+		NoProgressReason = EBotNoProgressReason::NoPath;
 		return;
 	}
 	CurrentPathPointIndex = 1;
@@ -256,6 +279,28 @@ void UVehicleBotComponent::UpdateThrottle(float DeltaTime)
 			ThrottleInterpSpeed);
 
 	OwnerVehicle->DoThrottle(CurrentThrottle);
+	CurrentState = EBotState::Driving;
+	NoProgressReason = EBotNoProgressReason::None;
+}
+
+void UVehicleBotComponent::PrintDiagnostics()
+{
+	if (!OwnerVehicle)
+	{
+		return;
+	}
+
+	const float Speed =
+		OwnerVehicle->GetVehicleMovementComponent()->GetForwardSpeed();
+
+	UE_LOG(
+		LogTemp,
+		Display,
+		TEXT("[BOT] Speed=%.1f cm/s | Waypoint=%d | State=%s | Reason=%s"),
+		Speed,
+		CurrentWaypointIndex,
+		*UEnum::GetValueAsString(CurrentState),
+		*UEnum::GetValueAsString(NoProgressReason));
 }
 
 void UVehicleBotComponent::UpdateRecovery(float DeltaTime)
@@ -263,7 +308,8 @@ void UVehicleBotComponent::UpdateRecovery(float DeltaTime)
 	if (bIsRecovering)
 	{
 		RecoveryTimer += DeltaTime;
-
+		CurrentState = EBotState::Recovering;
+		NoProgressReason = EBotNoProgressReason::Recovering;
 		UE_LOG(LogTemp, Warning, TEXT("Recovering..."));
 		auto* Movement = OwnerVehicle->GetVehicleMovementComponent();
 
@@ -287,6 +333,8 @@ void UVehicleBotComponent::UpdateRecovery(float DeltaTime)
 
 	if (IsVehicleStuck())
 	{
+		CurrentState = EBotState::Stuck;
+		NoProgressReason = EBotNoProgressReason::Blocked;
 		StuckTimer += DeltaTime;
 
 		if (StuckTimer >= StuckTimeThreshold)

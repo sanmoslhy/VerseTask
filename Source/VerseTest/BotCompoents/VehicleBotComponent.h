@@ -57,6 +57,10 @@ public:
 	int32 CurrentWaypointIndex = 0;
 	UPROPERTY(VisibleAnywhere, Category = "AI")
 	int32 CurrentPathPointIndex = 1;
+	UPROPERTY(EditAnywhere, Category = "AI")
+	float PathPointAcceptanceRadius = 250.f;
+	UPROPERTY(EditAnywhere, Category = "AI")
+	float WaypointAcceptanceRadius = 300.f;
 	UPROPERTY(VisibleAnywhere, Category = "AI|Driving")
 	float CurrentSteering = 0.f;
 
@@ -102,9 +106,6 @@ public:
 
 	UPROPERTY(VisibleAnywhere, Category = "Diagnostics")
 	EBotNoProgressReason NoProgressReason = EBotNoProgressReason::None;
-
-	UPROPERTY(EditAnywhere, Category = "Diagnostics")
-	bool bEnableDiagnostics = false;
 
 	UPROPERTY(EditAnywhere, Category = "Diagnostics")
 	float DiagnosticInterval = 1.0f;

@@ -205,7 +205,7 @@ void UVehicleBotComponent::UpdatePathFollowing(float DeltaTime)
 				OwnerVehicle->GetActorLocation(),
 				NextPoint);
 
-		if (PathPointDistance < 250.f)
+		if (PathPointDistance < PathPointAcceptanceRadius)
 		{
 			CurrentPathPointIndex++;
 
@@ -226,7 +226,7 @@ void UVehicleBotComponent::UpdateWaypoint()
 			OwnerVehicle->GetActorLocation(),
 			TargetLocation);
 
-	if (PatrolPoints.Num() > 0 && Distance < 300.f)
+	if (PatrolPoints.Num() > 0 && Distance < WaypointAcceptanceRadius)
 	{
 		CurrentWaypointIndex =
 			(CurrentWaypointIndex + 1) % PatrolPoints.Num();

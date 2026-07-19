@@ -6,11 +6,11 @@
 
 # 
 
-# \*\*Engine:\*\* Unreal Engine 5.6  
+# \*\*Engine:\*\* Unreal Engine 5.6
 
-# \*\*Language:\*\* C++  
+# \*\*Language:\*\* C++
 
-# \*\*Networking:\*\* Server-Authoritative Multiplayer  
+# \*\*Networking:\*\* Server-Authoritative Multiplayer
 
 # \*\*Physics:\*\* Chaos Vehicles
 
@@ -24,7 +24,7 @@
 
 # 
 
-# ```text
+# 
 
 # Source/
 
@@ -60,7 +60,7 @@
 
 # └── Navigation Mesh
 
-# ```
+# 
 
 # 
 
